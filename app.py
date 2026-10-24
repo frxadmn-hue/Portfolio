@@ -21,10 +21,12 @@ from config.settings import get_settings
 from agents.demand_forecast_mrp import (
     BOMItem,
     DemandForecaster,
+    EconometricDemandForecaster,
     FinishedProduct,
     ForecastRequest,
     InvenTreeClient,
     MRPExcelExporter,
+    ProcurementBudgetOptimizer,
     ProcurementPlan,
     ProductionMRPEngine,
 )
@@ -95,7 +97,17 @@ class SystemManifest(BaseModel):
     compliance: str = "152-FZ / 98-FZ On-Premise Localized"
     erp_integration: str = "InvenTree REST API Gateway"
     vector_database: str = "Local Qdrant Daemon (HNSW Cosine)"
+    econometrics_framework: str = "MGIMO Time Series (STL + SARIMAX + SciPy Simplex)"
     active_agents: List[str]
+
+
+class EconometricForecastRequest(BaseModel):
+    horizon_weeks: int = Field(default=4, ge=1, le=52)
+    promo_discount_pct: float = Field(default=25.0, ge=0.0, le=100.0)
+
+
+class BudgetOptimizationRequest(BaseModel):
+    budget_limit_rub: float = Field(gt=100000.0, description="Available procurement budget in RUB")
 
 
 class LegalAuditRequest(BaseModel):
@@ -181,6 +193,53 @@ def download_mrp_excel():
         filename=f"MRP_Plan_Natura_Siberica_{LATEST_MRP_PLAN.sku}.xlsx",
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+
+@app.post("/api/v1/mrp/econometric-forecast", tags=["1. Demand Forecasting & MRP"])
+def run_econometric_forecast(request: EconometricForecastRequest):
+    """
+    Executes STL time-series decomposition and SARIMAX econometric modeling (MGIMO standard).
+    Quantifies promotional elasticity and forward demand confidence bounds.
+    """
+    forecaster_ml = EconometricDemandForecaster()
+    stl_results = forecaster_ml.decompose_stl()
+    sarimax_results = forecaster_ml.forecast_sarimax(
+        horizon_weeks=request.horizon_weeks,
+        planned_promo_discount_pct=request.promo_discount_pct
+    )
+    return {
+        "framework": "MGIMO Econometrics (Artamonov Time Series Methodology)",
+        "stl_decomposition": {
+            "trend_direction": stl_results["trend_direction"],
+            "seasonal_amplitude_pct": stl_results["seasonal_amplitude_pct"],
+        },
+        "sarimax_model": sarimax_results
+    }
+
+
+@app.post("/api/v1/mrp/optimize-budget", tags=["1. Demand Forecasting & MRP"])
+def optimize_procurement_budget(request: BudgetOptimizationRequest):
+    """
+    Solves Linear Programming (LP) Simplex optimization via scipy.optimize.linprog.
+    Finds mathematically optimal raw material procurement allocation under finance budget caps.
+    """
+    global LATEST_MRP_PLAN
+    if not LATEST_MRP_PLAN:
+        product = build_flagship_product()
+        req = ForecastRequest(product_sku=product.sku, planned_baseline_units=50000, channel_promo_lift_pct=25.0)
+        LATEST_MRP_PLAN = mrp_engine.generate_procurement_plan(
+            product,
+            forecaster.forecast_product_demand(product, req),
+            inventree.get_stock_levels([b.code for b in product.bom])
+        )
+    
+    product = build_flagship_product()
+    opt_result = ProcurementBudgetOptimizer.optimize_procurement_under_budget_cap(
+        product=product,
+        unconstrained_plan=LATEST_MRP_PLAN.requirements,
+        budget_cap_rub=request.budget_limit_rub
+    )
+    return opt_result
 
 
 # --- Agent 2: Legal Risk & Contract Compliance Endpoints ---

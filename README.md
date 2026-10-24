@@ -2,7 +2,7 @@
 ### Решения для производственных предприятий, FMCG, управления цепями поставок и юридической экспертизы
 
 [![Status](https://img.shields.io/badge/Status-Production%20%7C%20Gov%20Contracts-blue.svg)]()
-[![Tests](https://img.shields.io/badge/Tests-14%2F14%20Passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-17%2F17%20Passing-brightgreen.svg)]()
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)]()
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Production%20Ready-green.svg)](https://fastapi.tiangolo.com)
@@ -154,6 +154,8 @@ python app.py
 ```
 После запуска откройте в браузере **`http://127.0.0.1:8000/docs`**:
 * **`/api/v1/mrp/calculate`**: ввод параметров партии ➔ эконометрический расчет ➔ автоматический драфт PO в InvenTree ERP.
+* **`/api/v1/mrp/econometric-forecast`**: STL-декомпозиция ряда продаж и SARIMAX-прогнозирование с оценкой промо-эластичности (методология МГИМО).
+* **`/api/v1/mrp/optimize-budget`**: решение задачи условной оптимизации закупки сырья симплекс-методом (`scipy.optimize.linprog`) при жестких лимитах бюджета.
 * **`/api/v1/mrp/export-excel`**: скачивание отформатированной таблицы снабжения с формулами (`.xlsx`).
 * **`/api/v1/legal/audit`**: аудит договора сети ➔ выявление рисков по ст. 330, 333, 1465 ГК РФ и ТР ТС 009.
 * **`/api/v1/legal/export-docx`**: выгрузка готового трехколоночного Протокола разногласий в Microsoft Word (`.docx`).

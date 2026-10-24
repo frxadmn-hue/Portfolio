@@ -6,6 +6,7 @@ from .models import BOMItem, FinishedProduct, ForecastRequest, MRPRequirement, P
 from .forecaster import DemandForecaster, ProductionMRPEngine
 from .inventree_client import InvenTreeClient
 from .excel_exporter import MRPExcelExporter
+from .econometric_engine import EconometricDemandForecaster, ProcurementBudgetOptimizer
 
 __all__ = [
     "BOMItem",
@@ -17,4 +18,6 @@ __all__ = [
     "ProductionMRPEngine",
     "InvenTreeClient",
     "MRPExcelExporter",
+    "EconometricDemandForecaster",
+    "ProcurementBudgetOptimizer",
 ]
