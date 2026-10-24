@@ -35,7 +35,7 @@ class SecureQdrantStore:
         self.client: Optional[QdrantClient] = None
 
         try:
-            self.client = QdrantClient(url=self.host, timeout=2.0)
+            self.client = QdrantClient(url=self.host, timeout=2.0, check_compatibility=False)
             self._init_collection()
         except Exception as e:
             logger.info(f"Qdrant connection bypassed or in-memory mode active ({e}).")

@@ -2,6 +2,8 @@
 ### Решения для производственных предприятий, FMCG, управления цепями поставок и юридической экспертизы
 
 [![Status](https://img.shields.io/badge/Status-Production%20%7C%20Gov%20Contracts-blue.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-14%2F14%20Passing-brightgreen.svg)]()
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)]()
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Production%20Ready-green.svg)](https://fastapi.tiangolo.com)
 [![Qdrant](https://img.shields.io/badge/Vector%20DB-Local%20Qdrant-red.svg)](https://qdrant.tech)
@@ -137,16 +139,37 @@ flowchart TB
 
 ---
 
-## 💻 Быстрый запуск и верификация модулей (CLI)
+## 💻 Интерактивный запуск и демонстрация
 
-Все модули являются полнофункциональными программными компонентами с типизированными контрактами Pydantic v2 и автоматическими тестами.
+Кодовая база включает в себя REST API шлюз (**FastAPI**), автоматическую генерацию документов для менеджмента (**Excel `.xlsx`** и **Word `.docx`**), контейнеризацию (**Docker**) и автоматические тесты (**CI/CD**).
 
-### 1. Установка окружения:
+### Способ 1: Локальный запуск интерактивного API (Swagger UI)
 ```bash
+# 1. Установка зависимостей
 pip install -r requirements.txt
+
+# 2. Запуск FastAPI сервера
+python app.py
+# Сервер доступен по адресу: http://127.0.0.1:8000
+```
+После запуска откройте в браузере **`http://127.0.0.1:8000/docs`**:
+* **`/api/v1/mrp/calculate`**: ввод параметров партии ➔ эконометрический расчет ➔ автоматический драфт PO в InvenTree ERP.
+* **`/api/v1/mrp/export-excel`**: скачивание отформатированной таблицы снабжения с формулами (`.xlsx`).
+* **`/api/v1/legal/audit`**: аудит договора сети ➔ выявление рисков по ст. 330, 333, 1465 ГК РФ и ТР ТС 009.
+* **`/api/v1/legal/export-docx`**: выгрузка готового трехколоночного Протокола разногласий в Microsoft Word (`.docx`).
+* **`/api/v1/rag/search`**: поиск по закрытым рецептурам Qdrant с крипто-маскировкой персональных данных и процентов масел (152-ФЗ / 98-ФЗ).
+
+---
+
+### Способ 2: Запуск в изолированном Docker-контуре
+Поднимает связку: локальный векторный сервер **Qdrant** + **AI Agents Gateway**:
+```bash
+docker compose up -d
 ```
 
-### 2. Запуск демонстрационных сценариев:
+---
+
+### Способ 3: Автономные консольные сценарии (CLI)
 ```bash
 # Кейс 1: Расчет потребности сырья и прогноз спроса (MRP + InvenTree)
 python -m agents.demand_forecast_mrp.runner
@@ -158,9 +181,12 @@ python -m agents.legal_compliance.runner
 python -m agents.secure_enterprise_rag.runner
 ```
 
-### 3. Запуск набора модульных тестов:
+---
+
+### Прохождение полного набора тестов (CI Quality Gate):
 ```bash
-python -m unittest discover tests
+python -m unittest discover tests -v
+# 14 тестов: математика MRP, статьи ГК РФ, криптографический vault, FastAPI эндпоинты
 ```
 
 ---

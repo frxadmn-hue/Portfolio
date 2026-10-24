@@ -13,6 +13,7 @@ from .models import (
 from .parser import ContractParser
 from .auditor import LegalComplianceAuditor
 from .runner import run_legal_audit
+from .docx_exporter import LegalDocxExporter
 
 __all__ = [
     "RiskSeverity",
@@ -24,4 +25,5 @@ __all__ = [
     "ContractParser",
     "LegalComplianceAuditor",
     "run_legal_audit",
+    "LegalDocxExporter",
 ]
